@@ -1,0 +1,7 @@
+name: FiberAnnotator
+channels:
+- defaults
+dependencies:
+- python==3.7.0
+- tk
+- pillow
