@@ -2,6 +2,9 @@ name: FiberAnnotator
 channels:
 - defaults
 dependencies:
-- python==3.7.0
+- python
 - tk
 - pillow
+- numpy
+- matplotlib
+- scipy

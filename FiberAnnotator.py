@@ -1,5 +1,5 @@
 import tkinter as tk
-from custom_canvas import CustomCanvas
+from customized_classes import CustomTkCanvas
 from PIL import ImageTk, Image, ImageGrab
 
 
@@ -20,7 +20,7 @@ class FiberAnnotator:
         self.root.bind("<Button-5>", self.mouse_wheel_scroll)
 
         # Canvas
-        self.canvas = CustomCanvas(root)
+        self.canvas = CustomTkCanvas(root)
         self.canvas.pack()
 
         self.canvas.bind("<Motion>", self.motion)
