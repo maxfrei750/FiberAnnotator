@@ -1,12 +1,13 @@
 import tkinter as tk
 from customized_classes import CustomTkCanvas
-from PIL import ImageTk, Image, ImageGrab
+from PIL import ImageTk, Image
 from spline import Spline
 import os
+from glob import glob
 
 
 class FiberAnnotator:
-    def __init__(self, root, output_folder):
+    def __init__(self, root, image_paths):
         # Root
         self.root = root
 
@@ -16,6 +17,7 @@ class FiberAnnotator:
         self.root.bind("<Right>", self.arrow_key)
 
         self.root.bind("<Return>", self.enter_key)
+        self.root.bind("<space>", self.space_key)
 
         self.root.bind("<MouseWheel>", self.mouse_wheel_scroll)
         self.root.bind("<Button-4>", self.mouse_wheel_scroll)
@@ -40,9 +42,11 @@ class FiberAnnotator:
         self.default_spline_width = 1
         self.image = None
         self.image_handle = None
-        self.image_path = None
+        self.active_image_path = None
+        self.image_paths = image_paths
+        self.output_folder = None
 
-        self.output_folder = output_folder
+        self.load_next_image()
 
     # Mouse ------------------------------------------------------------------------------------------------------------
     def left_mouse_button_down(self, event=None):
@@ -83,10 +87,19 @@ class FiberAnnotator:
 
     def enter_key(self, event=None):
         self.save_splines()
+        self.delete_all_splines()
+        self.delete_all_points()
+        self.load_next_image()
+
+    def space_key(self, event=None):
+        self.delete_all_points()
 
     # Actions ----------------------------------------------------------------------------------------------------------
+    def load_next_image(self):
+        self.load_image(self.image_paths.pop(1))
+
     def save_splines(self):
-        file_name_base = os.path.splitext(os.path.basename(self.image_path))[0]
+        file_name_base = os.path.splitext(os.path.basename(self.active_image_path))[0]
 
         for spline_id, spline in enumerate(self.splines):
             spline.save(self.image_size, file_name_base, self.output_folder, spline_id)
@@ -128,9 +141,20 @@ class FiberAnnotator:
             if self.active_point_handle is not None:
                 self.canvas.itemconfig(self.active_point_handle, fill="red")
 
-            self.update_active_spline()
+        self.update_active_spline()
+
+    def delete_all_points(self):
+        while self.point_handles:
+            self.canvas.delete(self.point_handles.pop())
+
+    def delete_all_splines(self):
+        while self.splines:
+            self.canvas.delete(self.splines.pop().handle)
 
     def place_point(self, x, y, color="red"):
+        if not self.point_handles:
+            self.create_new_spline()
+
         if self.point_handles:
             self.canvas.itemconfig(self.active_point_handle, fill="lime")
 
@@ -140,6 +164,14 @@ class FiberAnnotator:
 
         self.update_active_spline()
 
+    def create_new_spline(self):
+        if self.active_spline is None:
+            width = self.default_spline_width
+        else:
+            width = self.active_spline.width
+
+        self.splines.append(Spline(width=width))
+
     def update_active_spline(self):
         coordinates = list()
 
@@ -148,9 +180,13 @@ class FiberAnnotator:
         else:
             width = self.active_spline.width
 
-        self.delete_active_spline()
+        n_point_handles = len(self.point_handles)
 
-        if len(self.point_handles) >= 2:
+        if n_point_handles == 1:
+            self.canvas.delete(self.active_spline.handle)
+
+        if n_point_handles >= 2:
+            self.delete_active_spline()
             for handle in self.point_handles:
                 x1, y1, x2, y2 = self.canvas.bbox(handle)
                 x = (x1 + x2) / 2
@@ -167,11 +203,16 @@ class FiberAnnotator:
             self.canvas.delete(self.splines.pop().handle)
 
     def load_image(self, image_path):
-        self.image_path = image_path
+        self.output_folder = os.path.dirname(image_path)
+        self.active_image_path = image_path
         self.image = ImageTk.PhotoImage(Image.open(image_path))
 
         w, h = self.image.width(), self.image.height()
         self.canvas.configure(width=w, height=h)
+
+        if self.image_handle is not None:
+            self.canvas.delete(self.image_handle)
+
         self.image_handle = self.canvas.create_image(w, h, image=self.image, anchor="se")
 
     # Properties -------------------------------------------------------------------------------------------------------
@@ -199,6 +240,9 @@ class FiberAnnotator:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    fiber_annotator = FiberAnnotator(root, "")
-    fiber_annotator.load_image("testimage.tif")
+
+    image_glob = os.path.join("test_images", "*.tif")
+    image_paths = glob(image_glob)
+
+    fiber_annotator = FiberAnnotator(root, image_paths)
     root.mainloop()
