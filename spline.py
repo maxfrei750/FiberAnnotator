@@ -54,7 +54,7 @@ class Spline:
             "width": self.width
         }
 
-        csv_file_name = file_name_base + "_annotation_data{:06d}.csv".format(spline_id)
+        csv_file_name = file_name_base + "_data{:06d}.csv".format(spline_id)
         csv_file_path = os.path.join(output_folder, csv_file_name)
 
         pd.DataFrame(data=data).to_csv(csv_file_path, index=False)
