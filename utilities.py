@@ -15,7 +15,9 @@ def spline_interpolation(coordinates):
         y = coordinates[:, 1]
 
         tck, _ = interpolate.splprep([x, y], s=0)
-        x_new, y_new = interpolate.splev(np.linspace(0, 1, n_coordinates * 12), tck, der=0)
+
+        n_interpolation_steps = 8
+        x_new, y_new = interpolate.splev(np.linspace(0, 1, n_coordinates * n_interpolation_steps), tck, der=0)
 
         return np.stack((x_new, y_new), axis=-1).tolist()
     else:
