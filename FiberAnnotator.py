@@ -4,7 +4,7 @@ from PIL import ImageTk, Image
 from spline import Spline
 import os
 from glob import glob
-
+import random
 
 class FiberAnnotator:
     def __init__(self, root, image_paths):
@@ -26,10 +26,12 @@ class FiberAnnotator:
         # Canvas
         self.canvas = CustomTkCanvas(root)
         self.canvas.pack()
+        self.canvas.tag_bind("image", "<1>", self.image_onclick)
+        self.canvas.tag_bind("point", "<1>", self.point_onclick)
 
-        self.canvas.bind("<Motion>", self.motion)
-        self.canvas.bind("<ButtonPress-1>", self.left_mouse_button_down)
-        self.canvas.bind("<ButtonRelease-1>", self.left_mouse_button_up)
+        # self.canvas.bind("<Motion>", self.motion)
+        # self.canvas.bind("<ButtonPress-1>", self.left_mouse_button_down)
+        # self.canvas.bind("<ButtonRelease-1>", self.left_mouse_button_up)
         self.canvas.bind("<ButtonPress-3>", self.right_mouse_button_down)
         self.canvas.bind("<ButtonRelease-3>", self.right_mouse_button_up)
 
@@ -37,8 +39,9 @@ class FiberAnnotator:
         self.is_left_mouse_button_down = False
         self.is_right_mouse_button_down = False
         self.point_handles = list()
+        self.active_point_handle = None
         self.splines = list()
-        self.point_size = 2
+        self.point_size = 4
         self.default_spline_width = 1
         self.image = None
         self.image_handle = None
@@ -49,22 +52,12 @@ class FiberAnnotator:
         self.load_next_image()
 
     # Mouse ------------------------------------------------------------------------------------------------------------
-    def left_mouse_button_down(self, event=None):
-        # TODO: implement drag and drop of points
-        # self.is_left_mouse_button_down = True
-        # self.delete_active_point()
-        pass
-
-    def left_mouse_button_up(self, event=None):
-        self.is_left_mouse_button_down = False
-        self.place_point(event.x, event.y)
-
     def right_mouse_button_down(self, event=None):
         self.is_right_mouse_button_down = True
 
     def right_mouse_button_up(self, event=None):
         self.is_right_mouse_button_down = False
-        self.delete_active_point()
+        self.delete_last_point()
 
     def mouse_wheel_scroll(self, event=None):
         if event.num == 5 or event.delta == -120:
@@ -73,13 +66,6 @@ class FiberAnnotator:
             self.active_spline.width += 1
 
         self.update_active_spline()
-
-    def motion(self, event=None):
-        # TODO: Implement drag and drop for points.
-        # if self.is_left_mouse_button_down:
-        #     self.delete_active_point()
-        #     self.place_point(event.x, event.y, color="yellow")
-        pass
 
     # Keys -------------------------------------------------------------------------------------------------------------
     def arrow_key(self, event=None):
@@ -95,6 +81,29 @@ class FiberAnnotator:
         self.delete_all_points()
 
     # Actions ----------------------------------------------------------------------------------------------------------
+    def point_onclick(self, event=None):
+        if self.active_point_handle is not None:
+            self.canvas.itemconfig(self.active_point_handle, fill="lime")
+
+        # Search for the caller.
+        x = event.x
+        y = event.y
+
+        found_type = None
+
+        while found_type != "oval":
+            x += random.randint(-1, 1)
+            y += random.randint(-1, 1)
+
+            found_handle = self.canvas.find_closest(x, y)
+            found_type = self.canvas.type(found_handle)
+
+        self.active_point_handle = found_handle
+        self.canvas.itemconfig(self.active_point_handle, fill="red")
+
+    def image_onclick(self, event=None):
+        self.place_point(event.x, event.y)
+
     def load_next_image(self):
         self.load_image(self.image_paths.pop(1))
 
@@ -135,11 +144,15 @@ class FiberAnnotator:
 
             self.update_active_spline()
 
-    def delete_active_point(self):
-        if self.active_point_handle is not None:
-            self.canvas.delete(self.point_handles.pop())
+    def delete_last_point(self):
+        if self.last_point_handle is not None:
             if self.active_point_handle is not None:
-                self.canvas.itemconfig(self.active_point_handle, fill="red")
+                self.canvas.itemconfig(self.active_point_handle, fill="lime")
+            self.canvas.delete(self.point_handles.pop())
+            if self.last_point_handle is not None:
+                self.canvas.itemconfig(self.last_point_handle, fill="red")
+
+            self.active_point_handle = self.last_point_handle
 
         self.update_active_spline()
 
@@ -158,10 +171,12 @@ class FiberAnnotator:
         if self.point_handles:
             self.canvas.itemconfig(self.active_point_handle, fill="lime")
 
-        point_handle = self.canvas.create_circle(x, y, self.point_size, fill=color, outline="", activefill="yellow")
+        self.canvas.dtag("active", "active")
+        point_handle = self.canvas.create_circle(x, y, self.point_size, fill=color, outline="", activefill="yellow",
+                                                 tags=("point",))
         # TODO: Implement point selection.
         self.point_handles.append(point_handle)
-
+        self.active_point_handle = self.point_handles[-1]
         self.update_active_spline()
 
     def create_new_spline(self):
@@ -196,6 +211,8 @@ class FiberAnnotator:
 
             new_spline = Spline(coordinates, width=width)
             new_spline.handle = self.canvas.create_spline(coordinates, width=width, stipple="gray50")
+            self.canvas.tag_lower(new_spline.handle)
+            self.canvas.tag_lower(self.image_handle)
             self.splines.append(new_spline)
 
     def delete_active_spline(self):
@@ -213,11 +230,11 @@ class FiberAnnotator:
         if self.image_handle is not None:
             self.canvas.delete(self.image_handle)
 
-        self.image_handle = self.canvas.create_image(w, h, image=self.image, anchor="se")
+        self.image_handle = self.canvas.create_image(w, h, image=self.image, anchor="se", tags=("image",))
 
     # Properties -------------------------------------------------------------------------------------------------------
     @property
-    def active_point_handle(self):
+    def last_point_handle(self):
         if self.point_handles:
             return self.point_handles[-1]
         else:
