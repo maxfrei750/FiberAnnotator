@@ -14,50 +14,53 @@ class Spline:
         self.points_raw = points
 
     def get_mask(self, image_size):
-        points = self.points_interpolated
-
-        points = [tuple(x) for x in points]
-
         mask = Image.new("L", image_size, 0)
-        ImageDraw.Draw(mask).line(points, fill=255, width=self.width)
 
-        # Draw ellipses at the line joins to cover up gaps.
-        r = math.floor(self.width / 2) - 1.5
+        if self.points_raw is not None:
+            points = self.points_interpolated
 
-        for point in points[1:-1]:
-            x, y = point
-            x0 = x - r
-            y0 = y - r
-            x1 = x + r
-            y1 = y + r
+            points = [tuple(x) for x in points]
+            ImageDraw.Draw(mask).line(points, fill=255, width=self.width)
 
-            ImageDraw.Draw(mask).ellipse([x0, y0, x1, y1], fill=255)
+            # Draw ellipses at the line joins to cover up gaps.
+            r = math.floor(self.width / 2) - 1.5
+
+            for point in points[1:-1]:
+                x, y = point
+                x0 = x - r
+                y0 = y - r
+                x1 = x + r
+                y1 = y + r
+
+                ImageDraw.Draw(mask).ellipse([x0, y0, x1, y1], fill=255)
 
         return mask
 
     def save(self, image_size, file_name_base, output_folder, spline_id):
-        os.makedirs(output_folder, exist_ok=True)
 
-        mask = self.get_mask(image_size)
-        mask_file_name = file_name_base + "_mask{:06d}.png".format(spline_id)
-        mask_file_path = os.path.join(output_folder, mask_file_name)
-        mask.save(mask_file_path)
+        if self.points_raw is not None:
+            os.makedirs(output_folder, exist_ok=True)
 
-        points = np.asarray(self.points_raw)
+            mask = self.get_mask(image_size)
+            mask_file_name = file_name_base + "_mask{:06d}.png".format(spline_id)
+            mask_file_path = os.path.join(output_folder, mask_file_name)
+            mask.save(mask_file_path)
 
-        x = points[:, 0]
-        y = points[:, 1]
+            points = np.asarray(self.points_raw)
 
-        data = {
-            "x": x,
-            "y": y,
-            "width": self.width
-        }
+            x = points[:, 0]
+            y = points[:, 1]
 
-        csv_file_name = file_name_base + "_data{:06d}.csv".format(spline_id)
-        csv_file_path = os.path.join(output_folder, csv_file_name)
+            data = {
+                "x": x,
+                "y": y,
+                "width": self.width
+            }
 
-        pd.DataFrame(data=data).to_csv(csv_file_path, index=False)
+            csv_file_name = file_name_base + "_data{:06d}.csv".format(spline_id)
+            csv_file_path = os.path.join(output_folder, csv_file_name)
+
+            pd.DataFrame(data=data).to_csv(csv_file_path, index=False)
 
     @property
     def points_interpolated(self):
