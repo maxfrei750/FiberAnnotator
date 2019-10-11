@@ -2,6 +2,9 @@ import utilities
 from PIL import Image, ImageDraw
 import math
 import os
+import numpy as np
+import pandas as pd
+
 
 class Spline:
     def __init__(self, points=None, width=1, handle=None):
@@ -33,12 +36,28 @@ class Spline:
         return mask
 
     def save(self, image_size, file_name_base, output_folder, spline_id):
+        os.makedirs(output_folder, exist_ok=True)
+
         mask = self.get_mask(image_size)
         mask_file_name = file_name_base + "_mask{:06d}.png".format(spline_id)
         mask_file_path = os.path.join(output_folder, mask_file_name)
         mask.save(mask_file_path)
 
+        points = np.asarray(self.points_raw)
 
+        x = points[:, 0]
+        y = points[:, 1]
+
+        data = {
+            "x": x,
+            "y": y,
+            "width": self.width
+        }
+
+        csv_file_name = file_name_base + "_annotation_data{:06d}.csv".format(spline_id)
+        csv_file_path = os.path.join(output_folder, csv_file_name)
+
+        pd.DataFrame(data=data).to_csv(csv_file_path, index=False)
 
     @property
     def points_interpolated(self):
