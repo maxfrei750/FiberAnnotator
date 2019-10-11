@@ -1,10 +1,12 @@
 import tkinter as tk
 from customized_classes import CustomTkCanvas
 from PIL import ImageTk, Image, ImageGrab
+from spline import Spline
+import os
 
 
 class FiberAnnotator:
-    def __init__(self, root):
+    def __init__(self, root, output_folder):
         # Root
         self.root = root
 
@@ -33,18 +35,14 @@ class FiberAnnotator:
         self.is_left_mouse_button_down = False
         self.is_right_mouse_button_down = False
         self.point_handles = list()
-        self.spline_handles = list()
+        self.splines = list()
         self.point_size = 2
+        self.default_spline_width = 1
         self.image = None
         self.image_handle = None
         self.image_path = None
 
-        # Hidden properties
-        self.__active_spline_width = 1
-
-        # Load image
-        # TODO: Write routine to glob through images.
-        self.load_image("testimage.tif")
+        self.output_folder = output_folder
 
     # Mouse ------------------------------------------------------------------------------------------------------------
     def left_mouse_button_down(self, event=None):
@@ -66,9 +64,9 @@ class FiberAnnotator:
 
     def mouse_wheel_scroll(self, event=None):
         if event.num == 5 or event.delta == -120:
-            self.active_spline_width -= 1
+            self.active_spline.width -= 1
         if event.num == 4 or event.delta == 120:
-            self.active_spline_width += 1
+            self.active_spline.width += 1
 
         self.update_active_spline()
 
@@ -84,9 +82,15 @@ class FiberAnnotator:
         self.move_active_point(event.keysym)
 
     def enter_key(self, event=None):
-        self.save_image("test.png")
+        self.save_splines()
 
     # Actions ----------------------------------------------------------------------------------------------------------
+    def save_splines(self):
+        file_name_base = os.path.splitext(os.path.basename(self.image_path))[0]
+
+        for spline_id, spline in enumerate(self.splines):
+            spline.save(self.image_size, file_name_base, self.output_folder, spline_id)
+
     def move_active_point(self, direction):
         direction = direction.lower()
 
@@ -136,20 +140,15 @@ class FiberAnnotator:
 
         self.update_active_spline()
 
-    def change_active_spline_width(self, amount):
-        if self.active_spline_handle is not None:
-            current_width = float(self.canvas.itemcget(self.active_spline_handle, "width"))
-            new_width = current_width + amount
-
-            if new_width < 1:
-                new_width = 1
-
-            self.canvas.itemconfig(self.active_spline_handle, width=new_width)
-
     def update_active_spline(self):
-        self.delete_active_spline()
-
         coordinates = list()
+
+        if self.active_spline is None:
+            width = self.default_spline_width
+        else:
+            width = self.active_spline.width
+
+        self.delete_active_spline()
 
         if len(self.point_handles) >= 2:
             for handle in self.point_handles:
@@ -157,13 +156,15 @@ class FiberAnnotator:
                 x = (x1 + x2) / 2
                 y = (y1 + y2) / 2
 
-                coordinates.append((x, y))
+                coordinates.append([x, y])
 
-            self.spline_handles.append(self.canvas.create_spline(coordinates, width=self.active_spline_width, stipple="gray50"))
+            new_spline = Spline(coordinates, width=width)
+            new_spline.handle = self.canvas.create_spline(coordinates, width=width, stipple="gray50")
+            self.splines.append(new_spline)
 
     def delete_active_spline(self):
-        if self.active_spline_handle is not None:
-            self.canvas.delete(self.spline_handles.pop())
+        if self.active_spline is not None:
+            self.canvas.delete(self.splines.pop().handle)
 
     def load_image(self, image_path):
         self.image_path = image_path
@@ -172,13 +173,6 @@ class FiberAnnotator:
         w, h = self.image.width(), self.image.height()
         self.canvas.configure(width=w, height=h)
         self.image_handle = self.canvas.create_image(w, h, image=self.image, anchor="se")
-
-    def save_image(self, file_name):
-        x = self.root.winfo_rootx() + self.canvas.winfo_x()
-        y = self.root.winfo_rooty() + self.canvas.winfo_y()
-        x1 = x + self.canvas.winfo_width()
-        y1 = y + self.canvas.winfo_height()
-        ImageGrab.grab().crop((x, y, x1, y1)).save(file_name)
 
     # Properties -------------------------------------------------------------------------------------------------------
     @property
@@ -189,25 +183,22 @@ class FiberAnnotator:
             return None
 
     @property
-    def active_spline_handle(self):
-        if self.spline_handles:
-            return self.spline_handles[-1]
+    def active_spline(self):
+        if self.splines:
+            return self.splines[-1]
         else:
             return None
 
     @property
-    def active_spline_width(self):
-        return self.__active_spline_width
-
-    @active_spline_width.setter
-    def active_spline_width(self, active_spline_width):
-        if active_spline_width < 1:
-            self.__active_spline_width = 1
+    def image_size(self):
+        if self.image is None:
+            return None
         else:
-            self.__active_spline_width = active_spline_width
+            return self.image.width(), self.image.height()
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    fiber_annotator = FiberAnnotator(root)
+    fiber_annotator = FiberAnnotator(root, "")
+    fiber_annotator.load_image("testimage.tif")
     root.mainloop()
