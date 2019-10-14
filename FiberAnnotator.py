@@ -1,10 +1,12 @@
 import tkinter as tk
+from tkinter import messagebox
 from customized_classes import CustomTkCanvas
 from PIL import ImageTk, Image
 from spline import Spline
 import os
 from glob import glob
 import random
+
 
 class FiberAnnotator:
     def __init__(self, root, image_paths):
@@ -18,6 +20,7 @@ class FiberAnnotator:
 
         self.root.bind("<Return>", self.enter_key)
         self.root.bind("<space>", self.space_key)
+        self.root.bind("<Delete>", self.delete_key)
 
         self.root.bind("<MouseWheel>", self.mouse_wheel_scroll)
         self.root.bind("<Button-4>", self.mouse_wheel_scroll)
@@ -29,9 +32,6 @@ class FiberAnnotator:
         self.canvas.tag_bind("image", "<1>", self.image_onclick)
         self.canvas.tag_bind("point", "<1>", self.point_onclick)
 
-        # self.canvas.bind("<Motion>", self.motion)
-        # self.canvas.bind("<ButtonPress-1>", self.left_mouse_button_down)
-        # self.canvas.bind("<ButtonRelease-1>", self.left_mouse_button_up)
         self.canvas.bind("<ButtonPress-3>", self.right_mouse_button_down)
         self.canvas.bind("<ButtonRelease-3>", self.right_mouse_button_up)
 
@@ -80,6 +80,10 @@ class FiberAnnotator:
     def space_key(self, event=None):
         self.delete_all_points()
 
+    def delete_key(self, event=None):
+        self.delete_active_spline()
+        self.delete_all_points()
+
     # Actions ----------------------------------------------------------------------------------------------------------
     def point_onclick(self, event=None):
         if self.active_point_handle is not None:
@@ -105,7 +109,10 @@ class FiberAnnotator:
         self.place_point(event.x, event.y)
 
     def load_next_image(self):
-        self.load_image(self.image_paths.pop(1))
+        if image_paths:
+            self.load_image(self.image_paths.pop(0))
+        else:
+            messagebox.showinfo("Last image.", "Congratulations! You annotated all images.")
 
     def save_splines(self):
         file_name_base = os.path.splitext(os.path.basename(self.active_image_path))[0]
@@ -174,7 +181,6 @@ class FiberAnnotator:
         self.canvas.dtag("active", "active")
         point_handle = self.canvas.create_circle(x, y, self.point_size, fill=color, outline="", activefill="yellow",
                                                  tags=("point",))
-        # TODO: Implement point selection.
         self.point_handles.append(point_handle)
         self.active_point_handle = self.point_handles[-1]
         self.update_active_spline()
