@@ -277,12 +277,23 @@ if __name__ == "__main__":
     image_paths_to_process = list()
     for image_path in image_paths:
         base_name = os.path.splitext(image_path)[0]
-        num_auxiliary_files = len(glob(base_name+"*.*"))-1
+
+        # Look for auxiliary files.
+        auxiliary_files_data = glob(base_name + "_data*.csv")
+        auxiliary_files_mask = glob(base_name + "_mask*.png")
+
+        num_auxiliary_files_data = len(auxiliary_files_data)
+        num_auxiliary_files_mask = len(auxiliary_files_mask)
+
+        if num_auxiliary_files_data != num_auxiliary_files_mask:
+            raise AssertionError("Mismatch of number of mask and data auxiliary files: " + image_path)
+
+        num_auxiliary_files = num_auxiliary_files_data+num_auxiliary_files_mask
 
         if num_auxiliary_files == 0:
             image_paths_to_process.append(image_path)
         else:
-            warnings.warn("Skipped file: " + image_path, UserWarning)
+            warnings.warn("Skipped file because it already has auxiliary files: " + image_path, UserWarning)
 
     fiber_annotator = FiberAnnotator(root, image_paths_to_process)
     root.mainloop()
