@@ -6,6 +6,7 @@ from spline import Spline
 import os
 from glob import glob
 import random
+import warnings
 
 
 class FiberAnnotator:
@@ -264,8 +265,24 @@ class FiberAnnotator:
 if __name__ == "__main__":
     root = tk.Tk()
 
-    image_glob = os.path.join("test_images", "*.tif")
+    image_glob = os.path.join("d:/", "sciebo", "Dissertation", "Referenzdaten", "IUTA", "easy_images", "overlapping_fibers_no_clutter_no_loops", "*.png")
     image_paths = glob(image_glob)
 
-    fiber_annotator = FiberAnnotator(root, image_paths)
+    image_paths.sort()
+
+    # Filter mask images.
+    image_paths = [image_path for image_path in image_paths if "mask" not in os.path.basename(image_path)]
+
+    # Skip files that were already evaluated.
+    image_paths_to_process = list()
+    for image_path in image_paths:
+        base_name = os.path.splitext(image_path)[0]
+        num_auxiliary_files = len(glob(base_name+"*.*"))-1
+
+        if num_auxiliary_files == 0:
+            image_paths_to_process.append(image_path)
+        else:
+            warnings.warn("Skipped file: " + image_path, UserWarning)
+
+    fiber_annotator = FiberAnnotator(root, image_paths_to_process)
     root.mainloop()
