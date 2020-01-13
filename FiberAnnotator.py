@@ -61,12 +61,13 @@ class FiberAnnotator:
         self.delete_last_point()
 
     def mouse_wheel_scroll(self, event=None):
-        if event.num == 5 or event.delta == -120:
-            self.active_spline.width -= 1
-        if event.num == 4 or event.delta == 120:
-            self.active_spline.width += 1
+        if self.active_spline is not None:
+            if event.num == 5 or event.delta == -120:
+                self.active_spline.width -= 1
+            if event.num == 4 or event.delta == 120:
+                self.active_spline.width += 1
 
-        self.update_active_spline()
+            self.update_active_spline()
 
     # Keys -------------------------------------------------------------------------------------------------------------
     def arrow_key(self, event=None):
