@@ -163,6 +163,9 @@ class FiberAnnotator:
 
             self.active_point_handle = self.last_point_handle
 
+            if self.last_point_handle is None:
+                self.delete_active_spline()
+
         self.update_active_spline()
 
     def delete_all_points(self):
