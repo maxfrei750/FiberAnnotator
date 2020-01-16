@@ -15,9 +15,13 @@ class FiberAnnotator:
         self.root = root
 
         self.root.bind("<Up>", self.arrow_key)
+        self.root.bind("w", self.arrow_key)
         self.root.bind("<Down>", self.arrow_key)
+        self.root.bind("s", self.arrow_key)
         self.root.bind("<Left>", self.arrow_key)
+        self.root.bind("a", self.arrow_key)
         self.root.bind("<Right>", self.arrow_key)
+        self.root.bind("d", self.arrow_key)
 
         self.root.bind("<Return>", self.enter_key)
         self.root.bind("<space>", self.space_key)
@@ -131,13 +135,13 @@ class FiberAnnotator:
 
             dx, dy = 0, 0
 
-            if direction == "up":
+            if direction == "up" or direction == "w":
                 dy = -1
-            elif direction == "down":
+            elif direction == "down" or direction == "s":
                 dy = 1
-            elif direction == "left":
+            elif direction == "left" or direction == "a":
                 dx = -1
-            elif direction == "right":
+            elif direction == "right" or direction == "d":
                 dx = 1
 
             x_new = x + dx
