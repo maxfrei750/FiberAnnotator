@@ -24,6 +24,7 @@ class FiberAnnotator:
         self.root.bind("d", self.arrow_key)
 
         self.root.bind("<Return>", self.enter_key)
+        self.root.bind("e", self.enter_key)
         self.root.bind("<space>", self.space_key)
         self.root.bind("<Delete>", self.delete_key)
 
