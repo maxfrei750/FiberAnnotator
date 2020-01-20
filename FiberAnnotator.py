@@ -116,10 +116,14 @@ class FiberAnnotator:
         self.place_point(event.x, event.y)
 
     def load_next_image(self):
-        if image_paths:
+        if self.image_paths:
             self.load_image(self.image_paths.pop(0))
         else:
             messagebox.showinfo("Last image.", "Congratulations! You annotated all images.")
+            self.quit()
+
+    def quit(self):
+        self.root.destroy()
 
     def save_splines(self):
         file_name_base = os.path.splitext(os.path.basename(self.active_image_path))[0]
