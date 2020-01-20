@@ -41,11 +41,6 @@ class Spline:
         if self.points_raw is not None:
             os.makedirs(output_folder, exist_ok=True)
 
-            mask = self.get_mask(image_size)
-            mask_file_name = file_name_base + "_mask{:06d}.png".format(spline_id)
-            mask_file_path = os.path.join(output_folder, mask_file_name)
-            mask.save(mask_file_path)
-
             points = np.asarray(self.points_raw)
 
             x = points[:, 0]
