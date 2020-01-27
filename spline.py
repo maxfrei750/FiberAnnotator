@@ -37,7 +37,7 @@ class Spline:
 
         return mask
 
-    def save(self, image_size, file_name_base, output_folder, spline_id):
+    def save(self, file_name_base, output_folder, spline_id):
 
         if self.points_raw is not None:
             os.makedirs(output_folder, exist_ok=True)

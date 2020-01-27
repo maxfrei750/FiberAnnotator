@@ -133,10 +133,10 @@ class FiberAnnotator:
             os.path.basename(self.active_image_path)
         )[0]
 
+        image_id = file_name_base.replace("_image", "")
+
         for spline_id, spline in enumerate(self.splines):
-            spline.save(
-                self.image_size, file_name_base, self.output_folder, spline_id
-            )
+            spline.save(image_id, self.output_folder, spline_id)
 
     def move_active_point(self, direction):
         direction = direction.lower()
@@ -304,28 +304,22 @@ if __name__ == "__main__":
         "IUTA",
         "easy_images",
         "not done yet",
-        "overlapping",
-        "*.png",
+        "individual",
+        "*_image.png",
     )
 
     image_paths = glob(image_glob)
 
     image_paths.sort()
 
-    # Filter mask images.
-    image_paths = [
-        image_path
-        for image_path in image_paths
-        if "mask" not in os.path.basename(image_path)
-    ]
-
     # Skip files that were already evaluated.
     image_paths_to_process = list()
     for image_path in image_paths:
-        base_name = os.path.splitext(image_path)[0]
+        image_directory = os.path.dirname(image_path)
+        image_name = os.path.splitext(os.path.basename(image_path))[0].replace("_image", "")
 
         # Look for auxiliary files.
-        auxiliary_files_data = glob(base_name + "_spline*.csv")
+        auxiliary_files_data = glob(os.path.join(image_directory, image_name + "_spline*.csv"))
 
         num_auxiliary_files = len(auxiliary_files_data)
 
