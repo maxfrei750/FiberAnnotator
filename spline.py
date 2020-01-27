@@ -49,7 +49,7 @@ class Spline:
 
             data = {"x": x, "y": y, "width": self.width}
 
-            csv_file_name = file_name_base + "_data{:06d}.csv".format(
+            csv_file_name = file_name_base + "_spline{:06d}.csv".format(
                 spline_id
             )
             csv_file_path = os.path.join(output_folder, csv_file_name)

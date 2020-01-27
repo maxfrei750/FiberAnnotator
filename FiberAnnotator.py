@@ -325,7 +325,7 @@ if __name__ == "__main__":
         base_name = os.path.splitext(image_path)[0]
 
         # Look for auxiliary files.
-        auxiliary_files_data = glob(base_name + "_data*.csv")
+        auxiliary_files_data = glob(base_name + "_spline*.csv")
 
         num_auxiliary_files = len(auxiliary_files_data)
 
