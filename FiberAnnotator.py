@@ -1,12 +1,13 @@
-import tkinter as tk
-from tkinter import messagebox
-from customized_classes import CustomTkCanvas
-from PIL import ImageTk, Image
-from spline import Spline
 import os
-from glob import glob
 import random
+import tkinter as tk
 import warnings
+from glob import glob
+from tkinter import messagebox
+
+from customized_classes import CustomTkCanvas
+from PIL import Image, ImageTk
+from spline import Spline
 
 
 class FiberAnnotator:
@@ -119,17 +120,23 @@ class FiberAnnotator:
         if self.image_paths:
             self.load_image(self.image_paths.pop(0))
         else:
-            messagebox.showinfo("Last image.", "Congratulations! You annotated all images.")
+            messagebox.showinfo(
+                "Last image.", "Congratulations! You annotated all images."
+            )
             self.quit()
 
     def quit(self):
         self.root.destroy()
 
     def save_splines(self):
-        file_name_base = os.path.splitext(os.path.basename(self.active_image_path))[0]
+        file_name_base = os.path.splitext(
+            os.path.basename(self.active_image_path)
+        )[0]
 
         for spline_id, spline in enumerate(self.splines):
-            spline.save(self.image_size, file_name_base, self.output_folder, spline_id)
+            spline.save(
+                self.image_size, file_name_base, self.output_folder, spline_id
+            )
 
     def move_active_point(self, direction):
         direction = direction.lower()
@@ -193,8 +200,15 @@ class FiberAnnotator:
             self.canvas.itemconfig(self.active_point_handle, fill="lime")
 
         self.canvas.dtag("active", "active")
-        point_handle = self.canvas.create_circle(x, y, self.point_size, fill=color, outline="", activefill="yellow",
-                                                 tags=("point",))
+        point_handle = self.canvas.create_circle(
+            x,
+            y,
+            self.point_size,
+            fill=color,
+            outline="",
+            activefill="yellow",
+            tags=("point",),
+        )
         self.point_handles.append(point_handle)
         self.active_point_handle = self.point_handles[-1]
         self.update_active_spline()
@@ -230,7 +244,9 @@ class FiberAnnotator:
                 coordinates.append([x, y])
 
             new_spline = Spline(coordinates, width=width)
-            new_spline.handle = self.canvas.create_spline(coordinates, width=width, stipple="gray50")
+            new_spline.handle = self.canvas.create_spline(
+                coordinates, width=width, stipple="gray50"
+            )
             self.canvas.tag_lower(new_spline.handle)
             self.canvas.tag_lower(self.image_handle)
             self.splines.append(new_spline)
@@ -250,7 +266,9 @@ class FiberAnnotator:
         if self.image_handle is not None:
             self.canvas.delete(self.image_handle)
 
-        self.image_handle = self.canvas.create_image(w, h, image=self.image, anchor="se", tags=("image",))
+        self.image_handle = self.canvas.create_image(
+            w, h, image=self.image, anchor="se", tags=("image",)
+        )
 
     # Properties -------------------------------------------------------------------------------------------------------
     @property
@@ -278,13 +296,28 @@ class FiberAnnotator:
 if __name__ == "__main__":
     root = tk.Tk()
 
-    image_glob = os.path.join("d:/", "sciebo", "Dissertation", "Referenzdaten", "IUTA", "easy_images", "overlapping_fibers_no_clutter_no_loops", "*.png")
+    image_glob = os.path.join(
+        "d:/",
+        "sciebo",
+        "Dissertation",
+        "Referenzdaten",
+        "IUTA",
+        "easy_images",
+        "not done yet",
+        "overlapping",
+        "*.png",
+    )
+
     image_paths = glob(image_glob)
 
     image_paths.sort()
 
     # Filter mask images.
-    image_paths = [image_path for image_path in image_paths if "mask" not in os.path.basename(image_path)]
+    image_paths = [
+        image_path
+        for image_path in image_paths
+        if "mask" not in os.path.basename(image_path)
+    ]
 
     # Skip files that were already evaluated.
     image_paths_to_process = list()
@@ -299,7 +332,11 @@ if __name__ == "__main__":
         if num_auxiliary_files == 0:
             image_paths_to_process.append(image_path)
         else:
-            warnings.warn("Skipped file because it already has auxiliary files: " + image_path, UserWarning)
+            warnings.warn(
+                "Skipped file because it already has auxiliary files: "
+                + image_path,
+                UserWarning,
+            )
 
     fiber_annotator = FiberAnnotator(root, image_paths_to_process)
     root.mainloop()

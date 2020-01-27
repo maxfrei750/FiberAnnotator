@@ -1,9 +1,10 @@
-import utilities
-from PIL import Image, ImageDraw
 import math
 import os
+
 import numpy as np
 import pandas as pd
+import utilities
+from PIL import Image, ImageDraw
 
 
 class Spline:
@@ -46,13 +47,11 @@ class Spline:
             x = points[:, 0]
             y = points[:, 1]
 
-            data = {
-                "x": x,
-                "y": y,
-                "width": self.width
-            }
+            data = {"x": x, "y": y, "width": self.width}
 
-            csv_file_name = file_name_base + "_data{:06d}.csv".format(spline_id)
+            csv_file_name = file_name_base + "_data{:06d}.csv".format(
+                spline_id
+            )
             csv_file_path = os.path.join(output_folder, csv_file_name)
 
             pd.DataFrame(data=data).to_csv(csv_file_path, index=False)

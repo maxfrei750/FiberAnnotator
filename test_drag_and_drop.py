@@ -1,6 +1,8 @@
-import sys, os, string, time
+import os
+import string
+import sys
+import time
 import tkinter as tk
-
 
 # A Python example of drag and drop functionality within a single Tk widget.
 # The trick is in the bindings and event handler functions.
@@ -11,24 +13,38 @@ import tkinter as tk
 # leave.
 # up, leave, enter.
 
+
 class CanvasDnD(tk.Frame):
     def __init__(self, master):
         self.master = master
         self.loc = self.dragged = 0
         tk.Frame.__init__(self, master)
-        canvas = tk.Canvas(self, width=256, height=256,
-                           relief=tk.RIDGE, background="white", borderwidth=1)
-        self.defaultcolor = canvas.itemcget(canvas.create_text(30, 25,
-                                                               font=("Helvetica", 14), text="Item 1", tags="DnD"),
-                                            "fill")
-        canvas.create_text(75, 75,
-                           font=("Helvetica", 14), text="Item 2", tags="DnD")
-        canvas.create_text(125, 125,
-                           font=("Helvetica", 14), text="Item 3", tags="DnD")
-        canvas.create_text(175, 175,
-                           font=("Helvetica", 14), text="Item 4", tags="DnD")
-        canvas.create_text(225, 225,
-                           font=("Helvetica", 14), text="Item 5", tags="DnD")
+        canvas = tk.Canvas(
+            self,
+            width=256,
+            height=256,
+            relief=tk.RIDGE,
+            background="white",
+            borderwidth=1,
+        )
+        self.defaultcolor = canvas.itemcget(
+            canvas.create_text(
+                30, 25, font=("Helvetica", 14), text="Item 1", tags="DnD"
+            ),
+            "fill",
+        )
+        canvas.create_text(
+            75, 75, font=("Helvetica", 14), text="Item 2", tags="DnD"
+        )
+        canvas.create_text(
+            125, 125, font=("Helvetica", 14), text="Item 3", tags="DnD"
+        )
+        canvas.create_text(
+            175, 175, font=("Helvetica", 14), text="Item 4", tags="DnD"
+        )
+        canvas.create_text(
+            225, 225, font=("Helvetica", 14), text="Item 5", tags="DnD"
+        )
         canvas.pack(expand=1, fill=tk.BOTH)
         canvas.tag_bind("DnD", "<ButtonPress-1>", self.down)
         canvas.tag_bind("DnD", "<ButtonRelease-1>", self.chkup)
@@ -68,14 +84,20 @@ class CanvasDnD(tk.Frame):
 
     def up(self, event):
         event.widget.unbind("<Motion>")
-        if (self.target == event.widget.find_withtag(tk.CURRENT)):
+        if self.target == event.widget.find_withtag(tk.CURRENT):
             print("Select %s" % event.widget.itemcget(tk.CURRENT, "text"))
 
         else:
             event.widget.itemconfigure(tk.CURRENT, fill="blue")
             self.master.update()
-            time.sleep(.1)
-            print("%s Drag-N-Dropped onto %s" % (event.widget.itemcget(self.target, "text"), event.widget.itemcget(tk.CURRENT, "text")))
+            time.sleep(0.1)
+            print(
+                "%s Drag-N-Dropped onto %s"
+                % (
+                    event.widget.itemcget(self.target, "text"),
+                    event.widget.itemcget(tk.CURRENT, "text"),
+                )
+            )
             event.widget.itemconfigure(tk.CURRENT, fill=self.defaultcolor)
 
 
