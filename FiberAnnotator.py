@@ -296,17 +296,7 @@ class FiberAnnotator:
 if __name__ == "__main__":
     root = tk.Tk()
 
-    image_glob = os.path.join(
-        "d:/",
-        "sciebo",
-        "Dissertation",
-        "Referenzdaten",
-        "IUTA",
-        "easy_images",
-        "not done yet",
-        "individual",
-        "*_image.png",
-    )
+    image_glob = os.path.join("test_images", "*.tif",)
 
     image_paths = glob(image_glob)
 
