@@ -306,10 +306,14 @@ if __name__ == "__main__":
     image_paths_to_process = list()
     for image_path in image_paths:
         image_directory = os.path.dirname(image_path)
-        image_name = os.path.splitext(os.path.basename(image_path))[0].replace("_image", "")
+        image_name = os.path.splitext(os.path.basename(image_path))[0].replace(
+            "_image", ""
+        )
 
         # Look for auxiliary files.
-        auxiliary_files_data = glob(os.path.join(image_directory, image_name + "_spline*.csv"))
+        auxiliary_files_data = glob(
+            os.path.join(image_directory, image_name + "_spline*.csv")
+        )
 
         num_auxiliary_files = len(auxiliary_files_data)
 
