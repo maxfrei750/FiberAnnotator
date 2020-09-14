@@ -26,6 +26,9 @@ This repository holds a tool for the easy annotation of fibers, as used in the f
 9. Run the annotation tool: `python3 FiberAnnotator.py`
 
 ## Usage
+
+![Annotation](./assets/annotation.gif)
+
 * <kbd>Left Click</kbd>: place keypoint/select keypoint
 * <kbd>Right Click</kbd>: delete last keypoint
 * <kbd>Up</kbd> / <kbd>Down</kbd> / <kbd>Left</kbd> / <kbd>Right</kbd>: move active keypoint
