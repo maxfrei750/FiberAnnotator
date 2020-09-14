@@ -11,7 +11,7 @@ from customized_classes import CustomTkCanvas
 from spline import Spline
 
 # Change this constant to a regular expression, that matches the images that you want to annotate.
-IMAGE_GLOB = os.path.join("test_images", "*.tif", )
+IMAGE_GLOB = os.path.join("test_images", "*.jpg", )
 
 
 class FiberAnnotator:
