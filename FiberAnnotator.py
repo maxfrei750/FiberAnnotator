@@ -5,9 +5,13 @@ import warnings
 from glob import glob
 from tkinter import messagebox
 
-from customized_classes import CustomTkCanvas
 from PIL import Image, ImageTk
+
+from customized_classes import CustomTkCanvas
 from spline import Spline
+
+# Change this constant to a regular expression, that matches the images that you want to annotate.
+IMAGE_GLOB = os.path.join("test_images", "*.tif", )
 
 
 class FiberAnnotator:
@@ -296,9 +300,7 @@ class FiberAnnotator:
 if __name__ == "__main__":
     root = tk.Tk()
 
-    image_glob = os.path.join("test_images", "*.tif",)
-
-    image_paths = glob(image_glob)
+    image_paths = glob(IMAGE_GLOB)
 
     image_paths.sort()
 
