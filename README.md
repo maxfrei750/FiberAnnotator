@@ -38,6 +38,8 @@ This repository holds a tool for the easy annotation of fibers, as used in the f
 * <kbd>Del</kbd>: delete current/last fiber
 * <kbd>Enter</kbd> / <kbd>E</kbd>: end annotation of current image
 
+Annotation data is saved in the same folder as the input image as soon as the annotation of an image is finished (<kbd>Enter</kbd> / <kbd>E</kbd>).
+
 ## Citation
 If you use this annotation tool for a publication, then please cite it using the following bibtex-entry:
 ```
